@@ -1,0 +1,47 @@
+/* FamilyTree.css */
+
+/* General tree styling */
+svg {
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Styling for relationship lines */
+  .link {
+    stroke: #aaa;
+    stroke-width: 2px;
+    fill: none;
+  }
+  
+  /* Highlight nodes on hover */
+  .node rect {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .node:hover rect {
+    transform: scale(1.1);
+    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3));
+  }
+  
+  /* Apply color and shadow effects */
+  .node rect {
+    stroke: #222;
+    stroke-width: 2px;
+    rx: 10px;
+    ry: 10px;
+  }
+  
+  /* Animating expanding/collapsing */
+  .node-enter {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  
+  .node-update {
+    transition: transform 0.5s ease-in-out, opacity 0.5s;
+  }
+  
+  .node-exit {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  
