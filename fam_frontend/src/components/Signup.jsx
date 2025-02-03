@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "../api";
 import { useNavigate } from "react-router-dom";
-import Footer from "./footer";
+import Footer from "./Footer";
 // import "./Signup.css"; // Import CSS for styling?
 import { Link } from "react-router-dom";
 

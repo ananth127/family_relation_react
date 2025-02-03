@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import Footer from "./footer";
+import Footer from "./Footer";
 import { Link } from "react-router-dom";
 
 
