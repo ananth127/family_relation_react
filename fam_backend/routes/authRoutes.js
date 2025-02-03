@@ -42,11 +42,27 @@ router.post("/signup", async (req, res) => {
 
 // Login Route
 router.post("/login", async (req, res) => {
-  const { id, password } = req.body;
+  const { id,name, password } = req.body;
+console.log("name: "+name);
+  // const user = ((await User.findOne({ id })) || (await User.findOne({ name })));
+  // const user = await User.findOne({ $or: [{ id }, { name }] });
+  // const user = (await User.findOne({ name }));
+  let user;
 
-  const user = await User.findOne({ id });
-  if (!user) return res.status(400).json({ message: "User not found" });
+  // If id is provided, check by id
+  if (id) {
+    user = await User.findOne({ id });
+  }
 
+  // If name is provided, check by name (case-insensitive)
+  if (!user && name) {
+    user = await User.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") } });
+  }
+
+  console.log("user: "+user);
+
+  if (!user) {console.log("user not found"); return res.status(400).json({ message: "User not found" });}
+console.log("user found");
   // Verify Password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ message: "Incorrect password" });

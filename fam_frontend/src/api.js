@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://family-relation-react-867e.vercel.app/api",
 });
 
 export default instance;

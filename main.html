@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEEE Project Flowchart</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.2.3/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .mermaid {
+            font-size: 24px;
+            max-width: 90%;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>IEEE Project Flowchart</h1>
+    <div class="mermaid">
+        graph TD
+            Start(["🟢 Start"]) -->|🔑 Login/Register?| Login
+            Login -->|📝 Register| Reg["Enter User Details"]
+            Reg --> ValidateR["✅ Validate Data"]
+            ValidateR --> StoreDB["💾 Store in Database"]
+            Login -->|🔓 Login| Auth["🔍 Authentication"]
+            Auth -->|❌ Invalid| Login
+            Auth -->|✅ Valid| MainMenu["📌 Select Function"]
+            MainMenu -->|👤 Profile| Profile["Manage Profile"]
+            Profile --> UpdateProfile["✏️ Update Details"]
+            UpdateProfile --> StoreDB
+            MainMenu -->|🌳 Family Tree| FamTree["Family Tree Operations"]
+            FamTree --> ViewTree["👀 View Tree"] & AddMember["➕ Add Member"]
+            AddMember --> Verify["🔗 Verify Relationship"]
+            Verify -->|🛂 Biometric Verification| BiometricCheck
+            BiometricCheck -->|🎭 Face| FaceVerify["📷 Face Recognition"]
+            BiometricCheck -->|🖐 Fingerprint| FingerVerify["🖊 Fingerprint Scan"]
+            FaceVerify --> StoreDB
+            FingerVerify --> StoreDB
+            MainMenu -->|🏛 Aadhaar| Aadhaar["Aadhaar Operations"]
+            Aadhaar --> CheckRelation["🔍 Check Relations"]
+            CheckRelation --> UpdateAadhaar["📝 Update Aadhaar"]
+            UpdateAadhaar --> PropagateChanges["🔄 Propagate Changes"]
+            PropagateChanges --> StoreDB
+            MainMenu -->|🔒 Security| Security["Security Features"]
+            Security --> Encryption["🔐 Data Encryption"] & AccessControl["🔑 Access Control"]
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+        });
+    </script>
+</body>
+</html>
