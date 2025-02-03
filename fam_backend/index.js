@@ -6,14 +6,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const app = express();
 
-// CORS options configuration
-const corsOptions = {
-  origin: 'https://family-relation-react-wxjd.vercel.app', // Frontend URL
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true, // Allow cookies, authorization headers, etc.
-};
-
-app.use(cors(corsOptions)); // Use CORS middleware with the specified options
+app.use(cors());// Use CORS middleware with the specified options
 app.use(express.json());
 
 // Connect to MongoDB
