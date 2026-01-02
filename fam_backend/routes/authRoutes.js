@@ -40,29 +40,38 @@ router.post("/signup", async (req, res) => {
   res.status(201).json({ message: "User registered successfully" });
 });
 
+const { encryptID } = require("../utils/encryption");
+
+// ... (other imports)
+
+// ...
+
 // Login Route
 router.post("/login", async (req, res) => {
-  const { id,name, password } = req.body;
-console.log("name: "+name);
-  // const user = ((await User.findOne({ id })) || (await User.findOne({ name })));
-  // const user = await User.findOne({ $or: [{ id }, { name }] });
-  // const user = (await User.findOne({ name }));
+  // The frontend sends "identifier" which can be either ID or Name
+  const { identifier, password } = req.body;
+
   let user;
 
-  // If id is provided, check by id
-  if (id) {
-    user = await User.findOne({ id });
+  // 1. Try finding by ID (Exact Match)
+  // We MUST encrypt the identifier to match the DB format `det:HEX:SUFFIX` if it's an ID
+  const encryptedId = encryptID(identifier);
+  user = await User.findOne({ id: encryptedId });
+
+  // 2. If not found by ID, try exact Name match
+  if (!user) {
+    user = await User.findOne({ name: identifier });
   }
 
-  // If name is provided, check by name (case-insensitive)
-  if (!user && name) {
-    user = await User.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") } });
+  // 3. Fallback: Case-insensitive Name search
+  if (!user) {
+    user = await User.findOne({ name: { $regex: new RegExp(`^${identifier}$`, "i") } });
   }
 
-  console.log("user: "+user);
-
-  if (!user) {console.log("user not found"); return res.status(400).json({ message: "User not found" });}
-console.log("user found");
+  if (!user) {
+    return res.status(400).json({ message: "User not found" });
+  }
+  console.log("user found");
   // Verify Password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ message: "Incorrect password" });

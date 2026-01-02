@@ -1,32 +1,72 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
+const crypto = require("crypto");
+const fs = require("fs");
+const readline = require("readline");
 
-dotenv.config();
 const app = express();
-
-app.use(cors());// Use CORS middleware with the specified options
+app.use(cors());
 app.use(express.json());
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
 });
 
-const db = mongoose.connection;
-db.once("open", () => console.log("✅ MongoDB Connected"));
+const startServer = () => {
+  // Connect to MongoDB
+  // Mongoose 6+ no longer requires useNewUrlParser and useUnifiedTopology, but keeping them if user wants, 
+  // though they are deprecated. The user's original code had them.
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
-// Routes
-const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes);
+  const db = mongoose.connection;
+  db.once("open", () => console.log("✅ MongoDB Connected"));
 
-const familyTreeRoutes = require("./routes/familyTreeRoutes");
-app.use("/api/familyTree", familyTreeRoutes);
+  // Routes
+  const authRoutes = require("./routes/authRoutes");
+  app.use("/api/auth", authRoutes);
 
-const userRoutes = require("./routes/userRoutes");
-app.use("/api/users", userRoutes);
+  const familyTreeRoutes = require("./routes/familyTreeRoutes");
+  app.use("/api/familyTree", familyTreeRoutes);
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  const userRoutes = require("./routes/userRoutes");
+  app.use("/api/users", userRoutes);
+
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+};
+
+rl.question("Enter password to decrypt .env.enc: ", (password) => {
+  try {
+    const payload = JSON.parse(fs.readFileSync(".env.enc", "utf8"));
+    const salt = Buffer.from(payload.salt, "hex");
+    const iv = Buffer.from(payload.iv, "hex");
+    const encrypted = payload.data;
+
+    const key = crypto.scryptSync(password, salt, 32);
+    const decipher = crypto.createDecipheriv("aes-256-cbc", key, iv);
+
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+
+    decrypted.split("\n").forEach(line => {
+      if (!line) return;
+      const idx = line.indexOf("=");
+      if (idx !== -1) {
+        process.env[line.slice(0, idx)] = line.slice(idx + 1);
+      }
+    });
+
+    console.log("✅ Configuration loaded successfully.");
+    startServer();
+  } catch (error) {
+    console.error("❌ Failed to decrypt or load configuration. Wrong password?", error.message);
+    process.exit(1);
+  } finally {
+    rl.close();
+  }
+});
