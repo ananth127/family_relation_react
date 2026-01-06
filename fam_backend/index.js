@@ -6,7 +6,14 @@ const fs = require("fs");
 const readline = require("readline");
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://family-relation-react-wxjd.vercel.app"
+  ],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
+}));
 app.use(express.json());
 
 const rl = readline.createInterface({
