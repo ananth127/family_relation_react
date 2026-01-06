@@ -8,45 +8,39 @@ const readline = require("readline");
 const app = express();
 
 /* =======================
-   ✅ CORS CONFIG (FIXED)
-======================= */
-const corsOptions = {
-  origin: "https://family-relation-react-wxjd.vercel.app",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true
-};
+   CORS — ALLOW ALL ORIGINS
+   ======================= */
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
-app.use(cors(corsOptions));
-
-/* ✅ VERY IMPORTANT: Handle preflight */
-app.options("*", cors(corsOptions));
+// Handle preflight requests
+app.options("*", cors());
 
 app.use(express.json());
 
 /* =======================
-   ENV DECRYPTION
-======================= */
+   READ ENV & START SERVER
+   ======================= */
 const rl = readline.createInterface({
   input: process.stdin,
-  output: process.stdout
+  output: process.stdout,
 });
 
 const startServer = () => {
-  /* =======================
-     DATABASE
-  ======================= */
-  mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => {
-      console.error("❌ MongoDB error:", err.message);
-      process.exit(1);
-    });
+  mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
-  /* =======================
-     ROUTES
-  ======================= */
+  const db = mongoose.connection;
+  db.once("open", () => console.log("✅ MongoDB Connected"));
+
+  /* ========= ROUTES ========= */
   const authRoutes = require("./routes/authRoutes");
   app.use("/api/auth", authRoutes);
 
@@ -56,22 +50,15 @@ const startServer = () => {
   const userRoutes = require("./routes/userRoutes");
   app.use("/api/users", userRoutes);
 
-  /* =======================
-     SERVER
-  ======================= */
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () =>
     console.log(`🚀 Server running on port ${PORT}`)
   );
 };
 
-/* =======================
-   DECRYPT .env.enc
-======================= */
 rl.question("Enter password to decrypt .env.enc: ", (password) => {
   try {
     const payload = JSON.parse(fs.readFileSync(".env.enc", "utf8"));
-
     const salt = Buffer.from(payload.salt, "hex");
     const iv = Buffer.from(payload.iv, "hex");
     const encrypted = payload.data;
@@ -82,7 +69,7 @@ rl.question("Enter password to decrypt .env.enc: ", (password) => {
     let decrypted = decipher.update(encrypted, "hex", "utf8");
     decrypted += decipher.final("utf8");
 
-    decrypted.split("\n").forEach(line => {
+    decrypted.split("\n").forEach((line) => {
       if (!line) return;
       const idx = line.indexOf("=");
       if (idx !== -1) {
@@ -94,7 +81,7 @@ rl.question("Enter password to decrypt .env.enc: ", (password) => {
     startServer();
   } catch (error) {
     console.error(
-      "❌ Failed to decrypt or load configuration:",
+      "❌ Failed to decrypt or load configuration. Wrong password?",
       error.message
     );
     process.exit(1);
